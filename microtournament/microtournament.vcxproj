@@ -12,11 +12,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dll.cpp" />
-    <ClCompile Include="microtournament.cpp" />
+    <ClCompile Include="guidedunit.cpp" />
+    <ClCompile Include="microtournamentreferee.cpp" />
     <ClCompile Include="triggerunit.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="microtournament.hpp" />
+    <ClInclude Include="guidedunit.hpp" />
+    <ClInclude Include="microtournamentreferee.hpp" />
+    <ClInclude Include="playerunits.hpp" />
     <ClInclude Include="triggerunit.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -29,6 +32,7 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v100</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
