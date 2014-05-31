@@ -15,6 +15,7 @@
     <ClCompile Include="InfluenceMap.cpp" />
     <ClCompile Include="OUnit.cpp" />
     <ClCompile Include="PUnit.cpp" />
+    <ClCompile Include="rect.cpp" />
     <ClCompile Include="squad.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -23,6 +24,7 @@
     <ClInclude Include="InfluenceMap.hpp" />
     <ClInclude Include="OUnit.hpp" />
     <ClInclude Include="PUnit.hpp" />
+    <ClInclude Include="rect.hpp" />
     <ClInclude Include="squad.hpp" />
   </ItemGroup>
   <ItemGroup>

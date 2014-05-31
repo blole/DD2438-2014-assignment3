@@ -22,6 +22,11 @@
     <ClInclude Include="playerunits.hpp" />
     <ClInclude Include="triggerunit.hpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\common\common.vcxproj">
+      <Project>{7cfee4db-10dd-40d1-9175-5ea2f0913d17}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8D2682F5-7022-40E6-95E3-7257D43639F1}</ProjectGuid>
     <RootNamespace>ExampleTournamentModule</RootNamespace>
@@ -32,7 +37,6 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v100</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>

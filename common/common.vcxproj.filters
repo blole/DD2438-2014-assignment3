@@ -30,6 +30,9 @@
     <ClCompile Include="InfluenceMap.cpp">
       <Filter>source</Filter>
     </ClCompile>
+    <ClCompile Include="rect.cpp">
+      <Filter>source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameUnit.hpp">
@@ -48,6 +51,9 @@
       <Filter>headers</Filter>
     </ClInclude>
     <ClInclude Include="InfluenceMap.hpp">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="rect.hpp">
       <Filter>headers</Filter>
     </ClInclude>
   </ItemGroup>

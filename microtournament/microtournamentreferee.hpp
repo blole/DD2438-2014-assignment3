@@ -35,10 +35,6 @@ namespace microtournament
 
 	private:
 		bool enabled;
-		int fieldMinX;
-		int fieldMaxX;
-		int fieldMinY;
-		int fieldMaxY;
 		std::map<BWAPI::UnitType, std::vector<TriggerUnit*>> unitTriggers;
 		PlayerUnits players[2];
 		TriggerUnit* giveTrigger;

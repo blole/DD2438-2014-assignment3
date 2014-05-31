@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <regex>
 #include "microtournament/microtournamentreferee.hpp"
+#include "common/rect.hpp"
 
 using namespace BWAPI;
 using namespace microtournament;
@@ -35,6 +36,7 @@ std::vector<std::string> explode(const std::string& input) {
 }
 
 std::string errorText;
+int minUnitDistance = 20;
 
 void MicroTournamentReferee::onStart()
 {
@@ -60,16 +62,12 @@ void MicroTournamentReferee::onStart()
 		Broodwar << "   write !help for help" << std::endl;
 		enabled = true;
 
+		Rect playingField;
 		for each (Unit u in Broodwar->self()->getUnits())
 		{
-			if (u->getType() == UnitTypes::Special_Terran_Flag_Beacon)
-			{
-				fieldMinX = min(fieldMinX, u->getPosition().x);
-				fieldMaxX = std::max(fieldMaxX, u->getPosition().x);
-				fieldMinY = min(fieldMinY, u->getPosition().y);
-				fieldMaxY = std::max(fieldMaxY, u->getPosition().y);
-			}
-			if (u->getType() == UnitTypes::Terran_Civilian)
+			if (u->getType() == UnitTypes::Powerup_Flag)
+				playingField.enclose(u->getPosition());
+			else if (u->getType() == UnitTypes::Terran_Civilian)
 				unitTriggers[UnitTypes::Terran_Marine].push_back(new TriggerUnit(u));
 		}
 
@@ -83,7 +81,44 @@ void MicroTournamentReferee::onStart()
 		unitTriggers[UnitTypes::Terran_Marine].pop_back();
 		giveTrigger = unitTriggers[UnitTypes::Terran_Marine].back();
 		unitTriggers[UnitTypes::Terran_Marine].pop_back();
+
+		players[0].startingRectangle = playingField;
+		players[0].startingRectangle.width /= 2;
+
+		players[1].startingRectangle = playingField;
+		players[1].startingRectangle.width /= 2;
+		players[1].startingRectangle.x += playingField.width/2;
 	}
+}
+
+std::vector<Position> generatePositions(Rect bounds, unsigned int count, int minDistance)
+{
+	Rect shrunkBounds = bounds;
+	shrunkBounds.shrink(minDistance);
+	std::vector<Position> positions;
+	
+	while (positions.size() < count)
+	{
+		Position newPos(std::rand()%shrunkBounds.width, std::rand()%shrunkBounds.height);
+		bool collides = false;
+
+		for each (Position pos in positions)
+		{
+			if (newPos.getDistance(pos) < minDistance)
+			{
+				collides = true;
+				break;
+			}
+		}
+
+		if (!collides)
+			positions.push_back(newPos);
+	}
+
+	for (unsigned int i=0; i<count; i++)
+		positions[i] = positions[i] + Position(minDistance, minDistance);
+
+	return positions;
 }
 
 void MicroTournamentReferee::onFrame()
@@ -154,7 +189,7 @@ void MicroTournamentReferee::parseCommand(std::string command)
 					}
 					catch (std::invalid_argument ex)
 					{
-						Broodwar << "error parsing !spawn command, players and unit count need to be given as integers." << std::endl;
+						Broodwar << "spawn: error: players or unit count not integer" << std::endl;
 						continue;
 					}
 
@@ -165,7 +200,7 @@ void MicroTournamentReferee::parseCommand(std::string command)
 						type = UnitTypes::Terran_Marine;
 					else
 					{
-						Broodwar << "error: type '" << typeString << "' not recognized" << std::endl;
+						Broodwar << "spawn: error: unit type '" << typeString << "' not recognized" << std::endl;
 						continue;
 					}
 
@@ -173,15 +208,19 @@ void MicroTournamentReferee::parseCommand(std::string command)
 						players[player].goalUnitCount[type] += amount;
 					else
 					{
-						Broodwar << "error: player '" << player << "' must be either 1 or 0" << std::endl;
+						Broodwar << "spawn: error: player '" << player << "' must be either 1 or 0" << std::endl;
 						continue;
 					}
 
-					Broodwar << "spawning " << amount << " " << type << (amount > 1 ? "s" : "") << " for player " << player << std::endl;
+					Broodwar << "spawn: creating " << amount << " " << type << (amount > 1 ? "s" : "") << " for player " << player << std::endl;
 				}
 
+				bool symmetric = true;
 				for each (UnitType type in spawnableTypes)
 				{
+					if (players[0].goalUnitCount[type] != players[1].goalUnitCount[type])
+						symmetric = false;
+
 					int amount = players[0].goalUnitCount[type] + players[1].goalUnitCount[type];
 					std::vector<TriggerUnit*> triggers = unitTriggers[type];
 
@@ -190,6 +229,18 @@ void MicroTournamentReferee::parseCommand(std::string command)
 						if ((amount & (1 << i)) != 0)
 							triggers[i]->enable();
 					}
+				}
+
+				if (symmetric)
+				{
+					std::vector<Position> positions = generatePositions(players[0].startingRectangle, players[0].goalUnitCountTotal(), minUnitDistance);
+					players[0].goalPositions = positions;
+					players[1].goalPositions = positions;
+				}
+				else
+				{
+					players[0].goalPositions = generatePositions(players[0].startingRectangle, players[0].goalUnitCountTotal(), minUnitDistance);
+					players[1].goalPositions = generatePositions(players[1].startingRectangle, players[1].goalUnitCountTotal(), minUnitDistance);
 				}
 			}
 		}
@@ -248,9 +299,13 @@ void MicroTournamentReferee::onUnitCreate(BWAPI::Unit unit)
 		
 		for each (PlayerUnits player in players)
 		{
+			Position topLeft = Position(player.startingRectangle.x, player.startingRectangle.y);
 			if (player.currentUnitCount[type] < player.goalUnitCount[type])
 			{
-				player.units.push_back(GuidedUnit(unit, Position(100,100), 0));
+				//TODO: units of different types may not end up in symmetric positions!
+				Position pos = player.goalPositions[player.units.size()] + topLeft;
+
+				player.units.push_back(GuidedUnit(unit, pos, 0));
 				return;
 			}
 		}
